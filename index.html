@@ -165,7 +165,7 @@ nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:v
 
   <section id="v-shelf">
     <div class="recv">
-      <p><b>아빠가 보낸 첨삭 받기</b>아빠한테 카톡으로 받은 첨삭 파일(.json)을 골라요.</p>
+      <p><b>아빠의 첨삭</b><span id="syncMsg">열 때마다 아빠가 올린 첨삭을 자동으로 불러와요. 카톡으로 받은 파일(.json)도 고를 수 있어요.</span></p>
       <label>파일 고르기<input type="file" id="resIn" accept=".json,application/json"></label>
     </div>
     <div class="kstats" id="kstats"></div>
@@ -376,7 +376,7 @@ const LV={3:"잘했어요",2:"조금 더",1:"다음 목표"};
 let curR=null, rTab="fix";
 function renderRes(){
   const r=curR; $("#rTitle").textContent=r.title;
-  const tabs=[["fix","첨삭"],["essay","독후감 평가"],["list","고친 곳"],["exp","새 표현"]];
+  const tabs=[["fix","첨삭"],["essay","독후감 평가"],["list","고친 곳"],["exp","새 표현"]]; if((r.pages||[]).length) tabs.push(["pages","내 공책"]);
   let body="";
   if(rTab==="fix") body=`<div class="legend"><span><del>지운 부분</del></span><span><ins>고친 부분</ins></span>${canSpeak?`<span style="margin-left:auto">${speakBtn(r.corrected,"고친 글 듣기")}고친 글 듣기</span>`:""}</div><div class="paper"><div class="ttl">&lt;${esc(r.title)}&gt;</div>${diffHTML(r.original||"",r.corrected||"")}</div>`
     +(r.strengths?`<div class="note"><b>잘한 점</b>${esc(r.strengths)}</div>`:"")+(r.tips?`<div class="note warn"><b>다음에 해 볼 것</b>${esc(r.tips)}</div>`:"");
@@ -384,6 +384,7 @@ function renderRes(){
     ? (r.essay.overall?`<p class="overall">${esc(r.essay.overall)}</p>`:"")+r.essay.areas.map(a=>`<div class="area"><div class="area-h"><b>${esc(a.name)}</b><span class="lv lv${a.level}">${LV[a.level]||""}</span><span class="stars" aria-label="별 ${a.level}개">${"★".repeat(a.level)}${"☆".repeat(3-a.level)}</span></div><p>${esc(a.comment)}</p>${a.example?`<div class="ex">${speakBtn(a.example)}${esc(a.example)}</div>`:""}</div>`).join("")+(r.essay.mission?`<div class="note"><b>다음 독후감 미션</b>${esc(r.essay.mission)}</div>`:"")
     : `<div class="empty">이 책은 독후감 평가가 없어요.</div>`;
   else if(rTab==="list") body=(r.corrections||[]).map(c=>`<div class="corr"><div class="k">${esc(c.type)}</div><div class="pair"><del>${esc(c.original)}</del> → <ins>${esc(c.corrected)}</ins></div><div class="why">${esc(c.explain)}</div></div>`).join("")||`<div class="empty">고친 곳이 없어요.</div>`;
+  else if(rTab==="pages") body=(r.pages||[]).map(u=>`<img src="${esc(u)}" alt="내가 쓴 공책" loading="lazy" style="width:100%;border-radius:8px;border:1px solid var(--line);margin-bottom:12px">`).join("");
   else body=(r.expressions||[]).map(x=>`<div class="exp"><div class="en">${speakBtn(x.en)}${esc(x.en)}</div><div class="ko">${esc(x.ko)}</div></div>`).join("")||`<div class="empty">추천 표현이 없어요.</div>`;
   $("#rBody").innerHTML=`<div class="d-top"><div class="img">${r.cover?`<img src="${r.cover}" alt="">`:""}</div><div><h3>${esc(r.title)}</h3><div class="au">${esc(r.author||"")} · ${esc(fmt(r.readDate))}</div>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:""}</div></div>
     <div class="seg" role="tablist">${tabs.map(([k,v])=>`<button role="tab" data-rt="${k}" aria-selected="${rTab===k}">${v}</button>`).join("")}</div>${body}`;
@@ -392,7 +393,20 @@ function renderRes(){
 $("#shelf").onclick=e=>{ const b=e.target.closest("[data-r]"); if(!b) return; curR=results.find(x=>x.id===b.dataset.r); rTab="fix"; renderRes(); markSeen(curR); $("#res").classList.add("open"); document.body.style.overflow="hidden"; $("#res").scrollTop=0; };
 $("#closeRes").onclick=()=>{ $("#res").classList.remove("open"); document.body.style.overflow=""; loadResults(); };
 
-Promise.all([refresh(), loadResults()]).then(()=>{ if(!results.length && entries.length) showTab("send"); }).catch(()=>{ $("#list").innerHTML=`<div class="empty">이 브라우저에서는 저장할 수 없어요. 크롬이나 사파리로 열어 주세요.</div>`; });
+async function syncFromWeb(){
+  if(!/^https?:/.test(location.protocol)) return;
+  try{
+    const r=await fetch("data/books.json",{cache:"no-store"}); if(!r.ok) return;
+    const j=await r.json();
+    if(j.app!=="dain-reading-log"||j.kind!=="dad-results"||!Array.isArray(j.books)) return;
+    const before=new Map(results.map(x=>[x.id,x.reviewedAt||""]));
+    await upsertResults(j.books); await loadResults();
+    const fresh=j.books.filter(b=>before.get(b.id)!==(b.reviewedAt||"")).length;
+    const m=$("#syncMsg"); if(m) m.textContent = `아빠가 올린 첨삭 ${j.books.length}권을 불러왔어요${fresh&&before.size?` (새 첨삭 ${fresh}권)`:""}. 카톡으로 받은 파일도 고를 수 있어요.`;
+  }catch{ /* 인터넷이 없으면 저장된 기록으로 보여 줘요 */ }
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") syncFromWeb(); });
+Promise.all([refresh(), loadResults()]).then(()=>syncFromWeb()).then(()=>{ if(!results.length && entries.length) showTab("send"); }).catch(()=>{ $("#list").innerHTML=`<div class="empty">이 브라우저에서는 저장할 수 없어요. 크롬이나 사파리로 열어 주세요.</div>`; });
 if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 })();
 </script>

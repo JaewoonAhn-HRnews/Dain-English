@@ -1,4 +1,4 @@
-const C='dain-kid-v4';
+const C='dain-kid-v5';
 const CORE=['./','index.html'];
 const EXTRA=['manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(async c=>{
