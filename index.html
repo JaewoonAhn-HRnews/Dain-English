@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1D2A5B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="다인 쓰기장">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>다인의 독후감 쓰기장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=Gaegu:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF1F7; --surface:#FFFFFF; --paper:#FBFCFE; --ink:#1D2A5B; --pencil:#5B6272;
+  --line:#D5DFEE; --margin:#E0464C; --hl:#FFE27A; --pen:#2B62F0; --soft:#E3E9F4;
+  --serif:"Gowun Batang",Georgia,serif;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --hand:"Patrick Hand","Gaegu","Comic Sans MS",cursive;
+  --handko:"Gaegu","Patrick Hand",cursive;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1530; --surface:#171F3F; --paper:#1A2348; --ink:#E7ECF9; --pencil:#A2ABC4;
+  --line:#2B3768; --margin:#FF6E73; --hl:rgba(255,226,122,.28); --pen:#8DB0FF; --soft:#222C55;
+}}
+:root[data-theme="dark"]{
+  --bg:#0F1530; --surface:#171F3F; --paper:#1A2348; --ink:#E7ECF9; --pencil:#A2ABC4;
+  --line:#2B3768; --margin:#FF6E73; --hl:rgba(255,226,122,.28); --pen:#8DB0FF; --soft:#222C55;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.cam{display:flex;gap:8px;margin-top:8px}
+.cam label{flex:1;text-align:center;border:1.5px solid var(--ink);border-radius:12px;padding:11px 8px;font-weight:600;font-size:15px;cursor:pointer;background:var(--surface)}
+.cam input{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.wrap{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--pen);outline-offset:2px;border-radius:6px}
+.wrap{max-width:720px;margin:0 auto;padding:0 18px 140px}
+header{padding:28px 0 16px;border-bottom:2px solid var(--ink);display:flex;justify-content:space-between;align-items:end;gap:12px}
+h1{font-family:var(--serif);font-size:clamp(26px,7vw,38px);line-height:1.15;margin:0}
+header p{margin:6px 0 0;color:var(--pencil);font-size:14px}
+.no{font-family:var(--hand);font-size:20px;color:var(--pencil);text-align:right;line-height:1}
+.no b{display:block;font-size:50px;color:var(--ink);font-weight:400;border-bottom:1.5px solid var(--pencil);min-width:64px;text-align:center}
+
+.send{margin:20px 0;background:var(--ink);color:var(--bg);border-radius:18px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.send b{display:block;font-size:17px}
+.send span{font-size:13px;opacity:.8}
+.send button{border:0;background:var(--hl);color:#1D2A5B;font-weight:700;border-radius:12px;padding:12px 18px;font-size:15px}
+.send button:disabled{opacity:.45}
+
+h2{font-family:var(--serif);font-size:20px;margin:28px 0 10px}
+.item{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)}
+.item .c{width:56px;height:82px;border-radius:2px 5px 5px 2px;background:var(--soft);overflow:hidden;box-shadow:inset 4px 0 0 rgba(0,0,0,.12)}
+.item .c img{width:100%;height:100%;object-fit:cover}
+.item b{display:block;line-height:1.3}
+.item small{color:var(--pencil);font-size:13px}
+.stamp{font-family:var(--handko);font-size:17px;font-weight:700;padding:2px 10px;border-radius:8px;border:2px solid currentColor;transform:rotate(-6deg);display:inline-block;white-space:nowrap}
+.stamp.todo{color:var(--margin)} .stamp.done{color:var(--pen)}
+.item .x{border:0;background:none;color:var(--pencil);font-size:13px;text-decoration:underline;padding:8px 6px;min-height:36px}
+.empty{padding:40px 18px;text-align:center;color:var(--pencil);border:2px dashed var(--line);border-radius:18px}
+
+/* Form sheet */
+.sheet{position:fixed;inset:0;z-index:20;display:none;background:var(--bg);overflow-y:auto;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.sheet.open{display:block}
+.head{position:sticky;top:0;background:var(--bg);display:flex;gap:10px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);z-index:2}
+.head h3{margin:0;flex:1;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon{border:0;background:var(--soft);width:40px;height:40px;border-radius:50%;font-size:18px}
+.body{max-width:720px;margin:0 auto;padding:18px 18px 80px}
+.step{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+.step h4{margin:0 0 4px;font-size:16px;display:flex;gap:10px;align-items:center}
+.step h4 span{font-family:var(--hand);font-size:22px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;line-height:1;flex:none}
+.step>p{margin:0 0 12px;color:var(--pencil);font-size:13px}
+.drop{display:flex;gap:14px;align-items:center;border:2px dashed var(--line);border-radius:12px;padding:14px;cursor:pointer;background:var(--paper)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.pv{width:72px;height:104px;border-radius:4px;background:var(--soft);flex:none;overflow:hidden;display:grid;place-items:center;font-size:28px}
+.pv img{width:100%;height:100%;object-fit:cover}
+.drop small{color:var(--pencil);display:block}
+.pages{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pages img{width:64px;height:90px;object-fit:cover;border-radius:4px;border:1px solid var(--line)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--pencil);margin-top:12px}
+label.f input{background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px;color:var(--ink)}
+textarea{width:100%;min-height:160px;font-family:var(--hand);font-size:19px;line-height:1.5;background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:12px}
+.btn{width:100%;border:0;background:var(--margin);color:#fff;border-radius:14px;padding:15px;font-size:16px;font-weight:700}
+.err{color:var(--margin);font-size:14px;min-height:1.3em;margin:10px 0}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:10;border:0;background:var(--margin);color:#fff;border-radius:999px;padding:15px 26px;font-weight:700;font-size:16px;box-shadow:0 10px 24px -8px rgba(224,70,76,.7)}
+.toast{width:max-content;max-width:88vw;text-align:center;position:fixed;left:50%;top:calc(20px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;padding:14px 0 8px}
+.tab{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 18px;font-size:15px;font-weight:600;color:var(--pencil)}
+.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.recv{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0 6px;padding:14px;border-radius:16px;background:var(--surface);border:1.5px dashed var(--line)}
+.recv p{flex:1 1 200px;margin:0;font-size:13px;color:var(--pencil)}
+.recv p b{display:block;color:var(--ink);font-size:15px}
+.recv label{background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer}
+.recv input,.off{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.kstats{display:flex;gap:22px;font-size:13px;color:var(--pencil);margin:14px 0 18px}
+.kstats strong{display:block;font-size:20px;color:var(--ink)}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:24px 16px}
+.book{background:none;border:0;padding:0;text-align:left;display:flex;flex-direction:column;gap:6px;position:relative}
+.book .img{aspect-ratio:2/3;border-radius:3px 6px 6px 3px;overflow:hidden;background:var(--soft);box-shadow:inset 6px 0 0 rgba(0,0,0,.12),0 8px 18px -10px rgba(20,30,70,.55);display:grid;place-items:center;font-family:var(--serif);font-weight:700;padding:0;text-align:center}
+.book .img img{width:100%;height:100%;object-fit:cover}
+.book .t{font-weight:600;font-size:14px;line-height:1.35}
+.book .d{font-family:var(--hand);font-size:17px;color:var(--pencil);line-height:1}
+.new{position:absolute;top:-8px;right:-6px;background:var(--margin);color:#fff;font-family:var(--hand);font-size:16px;padding:2px 10px;border-radius:999px;transform:rotate(8deg)}
+.d-top{display:grid;grid-template-columns:100px 1fr;gap:16px;align-items:start}
+.d-top .img{aspect-ratio:2/3;border-radius:3px 6px 6px 3px;overflow:hidden;background:var(--soft)}
+.d-top .img img{width:100%;height:100%;object-fit:cover}
+.d-top h3{font-family:var(--serif);font-size:22px;line-height:1.2;margin:0}
+.d-top .au{color:var(--pencil);font-size:14px;margin:4px 0 8px}
+.summary{font-family:var(--handko);font-size:19px;line-height:1.4;margin:6px 0 0}
+.seg{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin:22px 0 16px;overflow-x:auto}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 10px;font-size:14px;font-weight:600;color:var(--pencil);white-space:nowrap}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.paper{--lh:38px;background-color:var(--paper);background-image:linear-gradient(90deg,transparent 40px,var(--margin) 40px,var(--margin) 41.5px,transparent 41.5px),repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--lh) - 1px),var(--line) calc(var(--lh) - 1px),var(--line) var(--lh));background-position:0 0,0 18px;border-radius:4px;padding:18px 16px 28px 52px;font-family:var(--hand);font-size:20px;line-height:var(--lh);box-shadow:0 14px 30px -18px rgba(20,30,70,.5);overflow-wrap:break-word}
+.paper .ttl{text-align:center;font-size:22px}
+.paper del,.pair del{color:var(--margin);text-decoration:line-through;text-decoration-thickness:2px}
+.paper ins{text-decoration:none;color:var(--pen);background:linear-gradient(transparent 55%,var(--hl) 55%,var(--hl) 92%,transparent 92%)}
+.pair ins{text-decoration:none;color:var(--pen)}
+.legend{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--pencil);margin:0 0 10px}
+.legend del{color:var(--margin)} .legend ins{color:var(--pen);text-decoration:none;background:var(--hl)}
+.note{background:var(--surface);border-left:4px solid var(--pen);border-radius:4px 12px 12px 4px;padding:12px 16px;margin:14px 0;font-size:14px}
+.note b{display:block}
+.note.warn{border-left-color:var(--margin)}
+.corr{display:grid;gap:4px;padding:14px 0;border-bottom:1px dashed var(--line)}
+.corr .k{font-size:11px;font-weight:700;color:var(--margin)}
+.pair{font-family:var(--hand);font-size:19px;line-height:1.35}
+.why{font-size:14px;color:var(--pencil)}
+.area{padding:14px 0;border-bottom:1px dashed var(--line)}
+.area-h{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.lv{font-size:12px;font-weight:700;padding:2px 10px;border-radius:999px;border:1.5px solid currentColor}
+.lv3{color:var(--pen)} .lv2{color:#B7791F} .lv1{color:var(--margin)}
+.stars{margin-left:auto;font-size:15px;letter-spacing:2px;color:#E8A317}
+.area p{margin:2px 0;font-size:14px}
+.ex{font-family:var(--hand);font-size:19px;line-height:1.35;color:var(--pen);margin-top:6px}
+.overall{font-family:var(--handko);font-size:20px;line-height:1.45;margin:0 0 6px}
+.say{border:0;background:var(--soft);border-radius:50%;width:36px;height:36px;font-size:17px;margin-right:8px;vertical-align:middle}
+.exp{padding:12px 0;border-bottom:1px dashed var(--line)}
+.exp .en{font-family:var(--hand);font-size:21px;line-height:1.3}
+.exp .ko{font-size:13px;color:var(--pencil)}
+.help{font-size:13px;color:var(--pencil);margin-top:30px;line-height:1.7}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>다인의 독후감 쓰기장</h1><p>읽은 책과 아빠의 첨삭을 모아 보고, 새 독후감을 보내요.</p></div>
+    <div class="no">No.<b id="count">0</b></div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-v="shelf" aria-selected="true">내 책장</button>
+    <button class="tab" role="tab" data-v="send" aria-selected="false">보내기</button>
+  </nav>
+
+  <section id="v-shelf">
+    <div class="recv">
+      <p><b>아빠가 보낸 첨삭 받기</b>아빠한테 카톡으로 받은 첨삭 파일(.json)을 골라요.</p>
+      <label>파일 고르기<input type="file" id="resIn" accept=".json,application/json"></label>
+    </div>
+    <div class="kstats" id="kstats"></div>
+    <div class="shelf" id="shelf"></div>
+  </section>
+
+  <section id="v-send" hidden>
+  <div class="send">
+    <div><b id="sendTitle">보낼 독후감이 없어요</b><span id="sendSub">새 독후감을 먼저 추가해요</span></div>
+    <button id="sendBtn" disabled>아빠에게 보내기</button>
+  </div>
+
+  <h2>내 독후감</h2>
+  <div id="list"></div>
+
+  </section>
+  <p class="help">‘아빠에게 보내기’를 누르면 파일 하나가 만들어져요. 카카오톡으로 아빠에게 보내면, 아빠가 손글씨를 읽고 첨삭해서 결과를 그림이나 워드 파일로 보내 줄 거예요. 아빠가 첨삭 파일을 보내 주면 ‘내 책장’에서 받아서 언제든 다시 볼 수 있어요. 기록은 이 기기에만 저장돼요.</p>
+</div>
+
+<button class="fab" id="addBtn">+ 독후감 추가</button>
+
+<div class="sheet" id="form" role="dialog" aria-modal="true" aria-labelledby="fTitleH">
+  <div class="head"><button class="icon" id="closeForm" aria-label="닫기">✕</button><h3 id="fTitleH">새 독후감</h3></div>
+  <div class="body">
+    <div class="step">
+      <h4><span>1</span>책 표지</h4>
+      <p>책 표지를 반듯하게 찍어요.</p>
+      <div class="drop" style="cursor:default"><div class="pv" id="coverPv">📕</div><div><b>표지 사진</b><small>표지를 반듯하게 화면에 꽉 차게</small></div></div>
+      <div class="cam"><label>📷 바로 찍기<input type="file" id="coverCam" accept="image/*" capture="environment"></label><label>🖼️ 사진첩<input type="file" id="coverIn" accept="image/*"></label></div>
+      <label class="f">책 제목<input id="title" placeholder="예: Wonder" autocomplete="off"></label>
+      <label class="f">작가 (몰라도 괜찮아요)<input id="author" placeholder="예: R.J. Palacio" autocomplete="off"></label>
+      <label class="f">다 읽은 날<input type="date" id="date"></label>
+    </div>
+    <div class="step">
+      <h4><span>2</span>독후감 공책</h4>
+      <p>쓴 쪽을 순서대로 한 장씩 찍어요. 여러 장 한꺼번에 골라도 돼요.</p>
+      <div class="drop" style="cursor:default"><div class="pv">📝</div><div><b>공책 사진 <span id="pageCount"></span></b><small>밝은 곳에서, 한 쪽씩 차례대로 찍어요. 여러 번 눌러 추가할 수 있어요.</small></div></div>
+      <div class="cam"><label>📷 한 쪽 찍기<input type="file" id="pagesCam" accept="image/*" capture="environment"></label><label>🖼️ 사진첩에서 여러 장<input type="file" id="pagesIn" accept="image/*" multiple></label></div>
+      <div class="pages" id="pagesPv"></div>
+    </div>
+    <div class="step">
+      <h4><span>3</span>직접 타이핑 (선택)</h4>
+      <p>공책 대신 여기에 영어로 써도 돼요. 비워 둬도 괜찮아요. 사진만 보내면 아빠가 글자로 바꿔서 확인해요.</p>
+      <textarea id="text" placeholder="Type your reading log here..."></textarea>
+      <label class="f">아빠에게 한마디 (선택)<input id="memo" placeholder="예: 이 책 진짜 재밌었어!" autocomplete="off"></label>
+    </div>
+    <div class="err" id="err"></div>
+    <button class="btn" id="saveBtn">저장하기</button>
+  </div>
+</div>
+<div class="sheet" id="res" role="dialog" aria-modal="true" aria-labelledby="rTitle">
+  <div class="head"><button class="icon" id="closeRes" aria-label="닫기">✕</button><h3 id="rTitle"></h3></div>
+  <div class="body" id="rBody"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("on"),2600); }
+
+/* IndexedDB: photos are too big for localStorage */
+let dbp = null;
+function idb(){
+  if (dbp) return dbp;
+  dbp = new Promise((res,rej)=>{ const r=indexedDB.open("dain-kid-log",2);
+    r.onupgradeneeded=()=>{ const d=r.result; if(!d.objectStoreNames.contains("entries")) d.createObjectStore("entries",{keyPath:"id"}); if(!d.objectStoreNames.contains("results")) d.createObjectStore("results",{keyPath:"id"}); };
+    r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+  return dbp;
+}
+async function tx(mode, fn){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction("entries",mode); const s=t.objectStore("entries"); const out=fn(s); t.oncomplete=()=>res(out&&out.result!==undefined?out.result:out); t.onerror=()=>rej(t.error); }); }
+const all = async () => { const db=await idb(); return new Promise((res,rej)=>{ const r=db.transaction("entries").objectStore("entries").getAll(); r.onsuccess=()=>res(r.result||[]); r.onerror=()=>rej(r.error); }); };
+const put = e => tx("readwrite", s=>s.put(e));
+const del = id => tx("readwrite", s=>s.delete(id));
+
+/* Images */
+function loadImg(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; }); }
+async function shrink(file, maxW, q){
+  const url=URL.createObjectURL(file); const img=await loadImg(url);
+  const s=Math.min(1,maxW/img.naturalWidth); const c=document.createElement("canvas");
+  c.width=Math.round(img.naturalWidth*s); c.height=Math.round(img.naturalHeight*s);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+  return c.toDataURL("image/jpeg", q);
+}
+
+/* List */
+let entries = [];
+async function refresh(){
+  entries = (await all()).sort((a,b)=>(b.readDate||"").localeCompare(a.readDate||"")||(b.createdAt||"").localeCompare(a.createdAt||""));
+  $("#count").textContent = Math.max(entries.length, results.length);
+  const todo = entries.filter(e=>!e.sentAt);
+  $("#sendTitle").textContent = todo.length ? `보낼 독후감 ${todo.length}권` : (entries.length ? "모두 보냈어요" : "보낼 독후감이 없어요");
+  $("#sendSub").textContent = todo.length ? todo.map(e=>e.title).slice(0,3).join(", ")+(todo.length>3?" 외":"") : (entries.length ? "새로 쓰면 여기에 모여요" : "새 독후감을 먼저 추가해요");
+  $("#sendBtn").disabled = !todo.length;
+  $("#list").innerHTML = entries.length ? entries.map(e=>`<div class="item"><div class="c">${e.cover?`<img src="${e.cover}" alt="">`:""}</div>
+    <div><b>${esc(e.title)}</b><small>${esc(e.readDate||"")} · 공책 ${e.pages.length}장${e.text?" · 타이핑":""}</small><br><button class="x" data-del="${e.id}">지우기</button>${e.sentAt?` <button class="x" data-resend="${e.id}">다시 보내기</button>`:""}</div>
+    <span class="stamp ${e.sentAt?"done":"todo"}">${results.some(r=>r.kidId===e.id)?"첨삭 완료":e.sentAt?"보냄":"보내기 전"}</span></div>`).join("")
+    : `<div class="empty">아직 없어요. 아래 ‘독후감 추가’를 눌러요.</div>`;
+}
+$("#list").onclick = async ev=>{
+  const d=ev.target.closest("[data-del]"), r=ev.target.closest("[data-resend]");
+  if (d){ const e=entries.find(x=>x.id===d.dataset.del); if(confirm(`‘${e.title}’을 지울까요?`)){ await del(e.id); refresh(); } }
+  if (r){ const e=entries.find(x=>x.id===r.dataset.resend); e.sentAt=""; await put(e); refresh(); toast("다시 보낼 목록에 넣었어요"); }
+};
+
+/* Form */
+let cover="", pages=[];
+function openForm(){ cover=""; pages=[]; ["#title","#author","#text","#memo"].forEach(s=>$(s).value=""); $("#date").value=today(); $("#coverPv").innerHTML="📕"; $("#pagesPv").innerHTML=""; $("#pageCount").textContent=""; $("#err").textContent=""; ["#coverIn","#coverCam","#pagesIn","#pagesCam"].forEach(x=>$(x).value=""); $("#form").classList.add("open"); document.body.style.overflow="hidden"; }
+function closeForm(){ $("#form").classList.remove("open"); document.body.style.overflow=""; }
+$("#addBtn").onclick=openForm; $("#closeForm").onclick=closeForm;
+async function onCover(e){ const f=e.target.files[0]; e.target.value=""; if(!f) return; try{ cover=await shrink(f,700,.82); $("#coverPv").innerHTML=`<img src="${cover}" alt="표지">`; }catch{ $("#err").textContent="사진을 열지 못했어요. 다시 찍어 주세요."; } }
+async function onPages(e){ const fs=[...e.target.files]; e.target.value=""; for(const f of fs){ try{ pages.push(await shrink(f,1600,.8)); }catch{ $("#err").textContent="열지 못한 사진이 있어요."; } } drawPages(); }
+function drawPages(){ $("#pageCount").textContent = pages.length?`· ${pages.length}장`:""; $("#pagesPv").innerHTML=pages.map((p,i)=>`<button type="button" data-pg="${i}" style="border:0;padding:0;background:none;position:relative" aria-label="${i+1}쪽 지우기"><img src="${p}" alt=""><span style="position:absolute;top:-6px;right:-6px;background:var(--margin);color:#fff;border-radius:50%;width:22px;height:22px;font-size:13px;line-height:22px">✕</span></button>`).join(""); }
+$("#coverIn").onchange=onCover; $("#coverCam").onchange=onCover;
+$("#pagesIn").onchange=onPages; $("#pagesCam").onchange=onPages;
+$("#pagesPv").onclick=e=>{ const b=e.target.closest("[data-pg]"); if(b){ pages.splice(+b.dataset.pg,1); drawPages(); } };
+$("#saveBtn").onclick=async ()=>{
+  const title=$("#title").value.trim(), text=$("#text").value.trim();
+  if(!title){ $("#err").textContent="책 제목을 써 주세요."; return; }
+  if(!pages.length && !text){ $("#err").textContent="공책 사진을 찍거나 3번에 타이핑해 주세요."; return; }
+  try{
+    await put({ id:"k"+Date.now().toString(36)+Math.random().toString(36).slice(2,6), title, author:$("#author").value.trim(), readDate:$("#date").value||today(), text, memo:$("#memo").value.trim(), cover, pages, createdAt:new Date().toISOString(), sentAt:"" });
+    closeForm(); refresh(); toast("저장했어요! 아빠에게 보내 볼까요?");
+  }catch(err){ $("#err").textContent="저장 공간이 부족해요. 보낸 독후감을 몇 개 지워 주세요."; }
+};
+
+/* Send to dad: one JSON file with photos inside */
+$("#sendBtn").onclick=async ()=>{
+  const todo=entries.filter(e=>!e.sentAt); if(!todo.length) return;
+  const pack={ app:"dain-reading-log", kind:"kid-export", version:1, exportedAt:new Date().toISOString(),
+    entries: todo.map(({id,title,author,readDate,text,memo,cover,pages,createdAt})=>({kidId:id,title,author,readDate,text,memo,cover,pages,createdAt})) };
+  const name=`다인독후감_${today()}_${todo.length}권.json`;
+  const file=new File([JSON.stringify(pack)], name, {type:"application/json"});
+  let sent=false;
+  try{
+    if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:"다인 독후감"}); sent=true; }
+  }catch(err){ if(err && err.name==="AbortError") return; }
+  if(!sent){ const a=document.createElement("a"); a.href=URL.createObjectURL(file); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); sent=true; toast("파일을 저장했어요. 카카오톡으로 아빠에게 보내 주세요."); }
+  const now=new Date().toISOString();
+  for(const e of todo){ e.sentAt=now; await put(e); }
+  refresh();
+};
+
+/* ---------- Read aloud (browser TTS) ---------- */
+const canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance!=="undefined";
+function speakBtn(text, label){ return canSpeak ? `<button type="button" class="say" data-say="${esc(text)}" aria-label="${label||"영어로 듣기"}">🔊</button>` : ""; }
+function speak(text){
+  if(!canSpeak) return; const ss=window.speechSynthesis; ss.cancel();
+  const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; u.rate=0.9;
+  const v=ss.getVoices().find(v=>/^en(-|_)US/i.test(v.lang)) || ss.getVoices().find(v=>/^en/i.test(v.lang)); if(v) u.voice=v;
+  ss.speak(u);
+}
+document.addEventListener("click", e=>{ const b=e.target.closest("[data-say]"); if(!b) return; e.preventDefault(); e.stopPropagation(); speak(b.dataset.say); }, true);
+
+/* ---------- Dad's correction results ---------- */
+let results = [];
+const SEEN="dain-kid-seen";
+const seen = () => { try{ return JSON.parse(localStorage.getItem(SEEN)||"{}"); }catch{ return {}; } };
+function markSeen(r){ try{ const s=seen(); s[r.id]=r.reviewedAt||"1"; localStorage.setItem(SEEN,JSON.stringify(s)); }catch{} }
+async function allResults(){ const db=await idb(); return new Promise((res,rej)=>{ const q=db.transaction("results").objectStore("results").getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>rej(q.error); }); }
+async function upsertResults(list){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction("results","readwrite"); const st=t.objectStore("results"); list.forEach(x=>st.put(x)); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
+const fmt = d => { if(!d) return ""; const [y,m,dd]=d.split("-"); return `${y}. ${+m}. ${+dd}.`; };
+const wc = s => (String(s||"").match(/[A-Za-z']+/g)||[]).length;
+async function loadResults(){
+  results = (await allResults()).sort((a,b)=>(b.readDate||"").localeCompare(a.readDate||""));
+  const s=seen();
+  $("#kstats").innerHTML = results.length ? `<div><strong>${results.length}권</strong>읽은 책</div><div><strong>${results.reduce((a,r)=>a+wc(r.original),0).toLocaleString()}</strong>영어로 쓴 단어</div><div><strong>${results.reduce((a,r)=>a+(r.corrections||[]).length,0)}곳</strong>배운 문장</div>` : "";
+  $("#shelf").innerHTML = results.length ? results.map(r=>`<button class="book" data-r="${esc(r.id)}">${s[r.id]===(r.reviewedAt||"1")?"":'<span class="new">NEW</span>'}<div class="img">${r.cover?`<img src="${r.cover}" alt="${esc(r.title)} 표지">`:esc(r.title)}</div><div class="t">${esc(r.title)}</div><div class="d">${esc(fmt(r.readDate))}</div></button>`).join("")
+    : `<div class="empty" style="grid-column:1/-1">아직 받은 첨삭이 없어요. 아빠가 보낸 첨삭 파일을 위에서 골라 주세요.</div>`;
+  refresh();
+}
+$("#resIn").onchange = async e=>{
+  const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{
+    const j=JSON.parse(await f.text());
+    if(j.app!=="dain-reading-log"||j.kind!=="dad-results"||!Array.isArray(j.books)) throw 0;
+    await upsertResults(j.books); await loadResults(); showTab("shelf");
+    toast(`첨삭 ${j.books.length}권을 받았어요!`);
+  }catch{ toast("아빠가 보낸 첨삭 파일이 아니에요. 다시 골라 주세요."); }
+};
+
+/* tabs */
+function showTab(v){ document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected", t.dataset.v===v)); $("#v-shelf").hidden = v!=="shelf"; $("#v-send").hidden = v!=="send"; }
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>showTab(t.dataset.v));
+
+/* diff */
+function tokenize(s){ const out=[]; const re=/(\s*)([A-Za-z0-9’']+|[^\sA-Za-z0-9’'])/g; let m; while((m=re.exec(s))) out.push({w:m[2], sp:m[1].length>0}); return out; }
+function diffSegs(a, b){
+  const A=tokenize(a||""), B=tokenize(b||""), n=A.length, m=B.length;
+  const dp=Array.from({length:n+1},()=>new Uint16Array(m+1));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) dp[i][j] = A[i].w===B[j].w ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  const out=[]; let i=0,j=0;
+  const push=(t,tok)=>{ const last=out[out.length-1]; if(last&&last.t===t) last.text+=(tok.sp?" ":"")+tok.w; else out.push({t, lead:tok.sp, text:tok.w}); };
+  while(i<n&&j<m){ if(A[i].w===B[j].w){push("=",B[j]);i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]){push("-",A[i]);i++;} else {push("+",B[j]);j++;} }
+  while(i<n) push("-",A[i++]); while(j<m) push("+",B[j++]);
+  if(out.length) out[0].lead=false;
+  for(let k=1;k<out.length;k++){ const pv=out[k-1], cu=out[k]; if(!cu.lead && pv.t!==cu.t && pv.t!=="=" && cu.t!=="=" && /[A-Za-z0-9]$/.test(pv.text) && /^[A-Za-z0-9(]/.test(cu.text)) cu.lead=true; }
+  return out;
+}
+function diffHTML(a, b){
+  return diffSegs(a,b).map(s=>{ const t=esc(s.text); return (s.lead?" ":"")+(s.t==="="?t:s.t==="-"?`<del>${t}</del>`:`<ins>${t}</ins>`); }).join("");
+}
+
+/* detail */
+const LV={3:"잘했어요",2:"조금 더",1:"다음 목표"};
+let curR=null, rTab="fix";
+function renderRes(){
+  const r=curR; $("#rTitle").textContent=r.title;
+  const tabs=[["fix","첨삭"],["essay","독후감 평가"],["list","고친 곳"],["exp","새 표현"]];
+  let body="";
+  if(rTab==="fix") body=`<div class="legend"><span><del>지운 부분</del></span><span><ins>고친 부분</ins></span>${canSpeak?`<span style="margin-left:auto">${speakBtn(r.corrected,"고친 글 듣기")}고친 글 듣기</span>`:""}</div><div class="paper"><div class="ttl">&lt;${esc(r.title)}&gt;</div>${diffHTML(r.original||"",r.corrected||"")}</div>`
+    +(r.strengths?`<div class="note"><b>잘한 점</b>${esc(r.strengths)}</div>`:"")+(r.tips?`<div class="note warn"><b>다음에 해 볼 것</b>${esc(r.tips)}</div>`:"");
+  else if(rTab==="essay") body = r.essay&&(r.essay.areas||[]).length
+    ? (r.essay.overall?`<p class="overall">${esc(r.essay.overall)}</p>`:"")+r.essay.areas.map(a=>`<div class="area"><div class="area-h"><b>${esc(a.name)}</b><span class="lv lv${a.level}">${LV[a.level]||""}</span><span class="stars" aria-label="별 ${a.level}개">${"★".repeat(a.level)}${"☆".repeat(3-a.level)}</span></div><p>${esc(a.comment)}</p>${a.example?`<div class="ex">${speakBtn(a.example)}${esc(a.example)}</div>`:""}</div>`).join("")+(r.essay.mission?`<div class="note"><b>다음 독후감 미션</b>${esc(r.essay.mission)}</div>`:"")
+    : `<div class="empty">이 책은 독후감 평가가 없어요.</div>`;
+  else if(rTab==="list") body=(r.corrections||[]).map(c=>`<div class="corr"><div class="k">${esc(c.type)}</div><div class="pair"><del>${esc(c.original)}</del> → <ins>${esc(c.corrected)}</ins></div><div class="why">${esc(c.explain)}</div></div>`).join("")||`<div class="empty">고친 곳이 없어요.</div>`;
+  else body=(r.expressions||[]).map(x=>`<div class="exp"><div class="en">${speakBtn(x.en)}${esc(x.en)}</div><div class="ko">${esc(x.ko)}</div></div>`).join("")||`<div class="empty">추천 표현이 없어요.</div>`;
+  $("#rBody").innerHTML=`<div class="d-top"><div class="img">${r.cover?`<img src="${r.cover}" alt="">`:""}</div><div><h3>${esc(r.title)}</h3><div class="au">${esc(r.author||"")} · ${esc(fmt(r.readDate))}</div>${r.summary?`<p class="summary">${esc(r.summary)}</p>`:""}</div></div>
+    <div class="seg" role="tablist">${tabs.map(([k,v])=>`<button role="tab" data-rt="${k}" aria-selected="${rTab===k}">${v}</button>`).join("")}</div>${body}`;
+  $("#rBody .seg").onclick=e=>{ const b=e.target.closest("[data-rt]"); if(b){ rTab=b.dataset.rt; renderRes(); } };
+}
+$("#shelf").onclick=e=>{ const b=e.target.closest("[data-r]"); if(!b) return; curR=results.find(x=>x.id===b.dataset.r); rTab="fix"; renderRes(); markSeen(curR); $("#res").classList.add("open"); document.body.style.overflow="hidden"; $("#res").scrollTop=0; };
+$("#closeRes").onclick=()=>{ $("#res").classList.remove("open"); document.body.style.overflow=""; loadResults(); };
+
+Promise.all([refresh(), loadResults()]).then(()=>{ if(!results.length && entries.length) showTab("send"); }).catch(()=>{ $("#list").innerHTML=`<div class="empty">이 브라우저에서는 저장할 수 없어요. 크롬이나 사파리로 열어 주세요.</div>`; });
+if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+})();
+</script>
+</body>
+</html>
